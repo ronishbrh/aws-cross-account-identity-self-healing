@@ -13,12 +13,34 @@ A security automation lab combining AWS IAM event monitoring, EventBridge, Lambd
 
 ## Architecture
 
-1. AWS IAM events are forwarded through Amazon EventBridge.
-2. AWS Lambda evaluates events and creates findings.
-3. Amazon SQS queues the findings.
-4. `sqs_to_wazuh.py` consumes messages and writes findings to a JSON file.
-5. Wazuh monitors that file and evaluates events against custom rules.
-6. Terraform manages the infrastructure defined in `main.tf`.
+```mermaid
+flowchart TD
+    A["AWS IAM API Events"] --> B["AWS CloudTrail"]
+    B --> C["Amazon EventBridge"]
+    C --> D["AWS Lambda<br/>Identity Event Analysis"]
+    D --> E["Amazon SQS<br/>Security Findings Queue"]
+    E --> F["sqs_to_wazuh.py<br/>Queue Consumer"]
+    F --> G["JSON Findings File"]
+    G --> H["Wazuh Manager"]
+    H --> I["Custom Detection Rules"]
+    I --> J["Security Alerts"]
+
+    K["Terraform<br/>main.tf"] -. "Defines SQS queues and Lambda send policy" .-> E
+
+    D -. "Current response mode: audit" .-> L["No automatic containment"]
+```
+
+**Event flow**
+
+1. AWS IAM API activity is recorded through CloudTrail and matched by an EventBridge rule.
+2. AWS Lambda classifies selected identity events and creates security findings.
+3. Findings are published to Amazon SQS.
+4. `sqs_to_wazuh.py` consumes messages and writes findings to the local JSON file.
+5. Wazuh monitors the file and evaluates findings against custom detection rules.
+6. Matching findings generate Wazuh security alerts.
+7. Terraform manages the infrastructure defined in `main.tf`.
+
+**Response safety:** Lambda remains in audit mode. The current verification does not establish that live containment works end to end.
 
 ## Key Files
 
