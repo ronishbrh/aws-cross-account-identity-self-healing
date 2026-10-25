@@ -1,0 +1,15 @@
+AWS Event Processing Evidence
+Date observed: 2026-10-24
+
+Observed in Lambda CloudWatch logs:
+- IAM events were received from aws.iam.
+- A PutUserPolicy event was classified as critical.
+- The response mode was audit.
+- action_taken was none.
+- Lambda reported that the finding was sent to SQS.
+- The SQS send operation returned a message ID.
+
+Safety and scope:
+- No automatic containment was reported in these events.
+- This log evidence confirms Lambda processing and SQS publishing.
+- It does not independently prove a one-to-one match between a specific EventBridge metric and a Lambda invocation.
