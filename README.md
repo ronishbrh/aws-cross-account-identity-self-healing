@@ -157,7 +157,4 @@ reviewed production response policy exists.
 -   Verify current deployment configuration and test outcomes before
     making claims about a particular live event.
 
-## License
 
-Choose a license before publishing. If you do not intend to grant reuse
-rights, do not add a license file by default.
