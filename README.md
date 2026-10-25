@@ -71,6 +71,15 @@ These checks validate key components, but do not prove that every event path or 
 - Never commit AWS credentials, Terraform state, private keys, runtime findings, or generated deployment archives.
 - Treat access-key deactivation as a potentially disruptive action requiring explicit approval and controlled testing.
 
+## Secret-Scanning Review
+
+- Gitleaks scanned the local Git history and reported three findings matching the `aws-access-token` rule in `lambda/test_containment.py`, at lines 36, 150, and 174 of commit `83efdca845d74a4efa267d35c41511afcadf3d9b`.
+- The flagged values were reviewed and appear to be dummy access-key identifiers used in mocked unit-test fixtures. This is a code-based assessment, not independent proof that the values have never been valid credentials.
+- A temporary Gitleaks baseline was used to suppress these previously identified findings. The baseline report is stored outside the repository under `/tmp` and is not a project artifact.
+- A clean scan using that baseline means no findings beyond the baseline were reported; it does not mean the historical findings were removed or that the repository is free of all secrets.
+- Do not publish credentials or raw scan reports. If any value is suspected to be a real credential, verify its status and follow the relevant AWS credential-rotation and incident-response procedures.
+- Re-run secret scanning before publishing, and review any new findings rather than automatically adding them to the baseline.
+
 ## Prerequisites and Setup
 
 **Prerequisites**
