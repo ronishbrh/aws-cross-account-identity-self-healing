@@ -71,6 +71,22 @@ These checks validate key components, but do not prove that every event path or 
 - Never commit AWS credentials, Terraform state, private keys, runtime findings, or generated deployment archives.
 - Treat access-key deactivation as a potentially disruptive action requiring explicit approval and controlled testing.
 
+## Prerequisites and Setup
+
+**Prerequisites**
+- AWS CLI configured with appropriate permissions for the lab.
+- Terraform installed.
+- Python environment with the dependencies required by the project.
+- A running Wazuh manager configured to monitor the findings JSON file and load the project's custom detection rules.
+
+**Setup notes**
+- Review `main.tf` and your AWS account and region configuration before running Terraform.
+- Run `terraform plan` and review the proposed changes before considering `terraform apply`; AWS resources may incur charges.
+- Configure the Lambda, SQS consumer, and Wazuh integration according to the project's existing configuration.
+- Keep Lambda in audit mode. Do not test live containment without explicit approval and a controlled test environment.
+
+The test command below validates the local unit tests; it does not deploy or configure the full AWS/Wazuh pipeline.
+
 ## Run Tests
 
 From the project root:
