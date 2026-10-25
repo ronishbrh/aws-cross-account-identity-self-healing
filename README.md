@@ -54,3 +54,23 @@ From the project root:
 
 ```bash
 python -m unittest discover -s lambda -p 'test_*.py' -v
+```
+
+## Verification Evidence
+
+The following checks were completed during development:
+
+- Lambda configuration reported `Active` and `LastUpdateStatus: Successful`.
+- Lambda was configured with `ALERT_MODE=audit`.
+- A synthetic `TagUser` event was invoked directly against Lambda.
+- Lambda classified the event as medium severity and reported that the finding was sent to SQS.
+- The SQS consumer wrote the finding to the Wazuh input JSON file.
+- Wazuh generated a level 10 alert under custom rule `100920` for the synthetic finding.
+- Nine containment-safety unit tests passed.
+- The repository excludes Terraform state, runtime findings, logs, and deployment ZIP archives.
+
+## Known Limitations
+
+- Direct Lambda-to-SQS-to-Wazuh processing was verified with a synthetic event. Automatic EventBridge-triggered execution was not independently verified during the final checks.
+- The deployed Lambda hardcodes `TEST_USER` to `self-healing-test-user`; the local source allows configuration through an environment variable. Review and reconcile this difference before any future deployment.
+- Live containment was not tested as part of the final pipeline verification. The deployed Lambda should remain in audit mode until controlled containment testing is explicitly approved.
