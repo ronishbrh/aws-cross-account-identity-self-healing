@@ -1,0 +1,14 @@
+Wazuh Alert Validation Evidence
+Date observed: 2026-10-25
+
+Observed in Wazuh alerts:
+- Custom rule 100920 generated level 10 alerts.
+- The rule belongs to the aws_identity_self_healing group.
+- Synthetic findings with finding_status=UNREVIEWED matched the rule.
+- The alert records were decoded as JSON.
+- The findings included response_mode=audit and action_taken=none.
+- The records identify the input as the AWS identity findings JSON file.
+
+Scope and limitations:
+- Validation used synthetic test findings, not a confirmed malicious event.
+- This demonstrates the Wazuh detection stage, not successful live containment.
