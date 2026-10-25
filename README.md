@@ -39,6 +39,7 @@ A security automation lab combining AWS IAM event monitoring, EventBridge, Lambd
 - The SQS consumer was running and its logs showed processed `TagUser` findings.
 - Nine containment-safety unit tests passed.
 - The deployed Lambda was configured with `ALERT_MODE=audit` at the last verification.
+- EventBridge's monitoring metrics showed one invocation at `2026-10-24 14:05 UTC`, correlated with Lambda logs at `14:06:48 UTC` showing a `TagUser` event processed and successfully sent to SQS.
 
 These checks validate key components, but do not prove that every event path or live containment action has been tested end to end.
 
@@ -71,6 +72,6 @@ The following checks were completed during development:
 
 ## Known Limitations
 
-- Direct Lambda-to-SQS-to-Wazuh processing was verified with a synthetic event. Automatic EventBridge-triggered execution was not independently verified during the final checks.
+- Automatic EventBridge-triggered processing is supported by correlated EventBridge invocation metrics and Lambda execution logs. A unique event ID was not available to prove a one-to-one match between the metric and log entry.
 - The deployed Lambda hardcodes `TEST_USER` to `self-healing-test-user`; the local source allows configuration through an environment variable. Review and reconcile this difference before any future deployment.
 - Live containment was not tested as part of the final pipeline verification. The deployed Lambda should remain in audit mode until controlled containment testing is explicitly approved.
