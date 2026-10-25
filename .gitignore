@@ -1,0 +1,43 @@
+# Terraform state and local configuration
+*.tfstate
+*.tfstate.*
+.terraform/
+*.tfplan
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Credentials and private keys
+credentials
+config
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# Runtime logs and local output
+logs/
+wazuh-logs/*.json
+wazuh-logs/*.json.*
+*.log
+
+# Generated deployment packages and backups
+lambda/*.zip
+*.bak
+*.pre-*
+
+# Local Lambda test artifacts
+lambda/lambda-test-response.json
+lambda/test-event.json
