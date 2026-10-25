@@ -92,6 +92,16 @@ The following checks were completed during development:
 - Nine containment-safety unit tests passed.
 - The repository excludes Terraform state, runtime findings, logs, and deployment ZIP archives.
 
+## Evidence Artifacts
+
+Sanitized validation summaries are available in the [`evidence/`](evidence/) directory:
+
+- [Containment-safety unit tests](evidence/containment-tests.txt) — results from nine unit tests covering audit mode, event validation, target-account checks, and mocked containment behavior.
+- [AWS event processing](evidence/aws-event-processing.txt) — CloudWatch log evidence of IAM event classification and successful SQS publishing.
+- [Wazuh alert validation](evidence/wazuh-alert-validation.txt) — synthetic findings matching custom rule `100920` at alert level 10.
+
+These artifacts summarize observed results without including raw CloudWatch logs or full Wazuh alert records. The tests use mocked AWS calls, and live containment remains unverified.
+
 ## Known Limitations
 
 - Automatic EventBridge-triggered processing is supported by correlated EventBridge invocation metrics and Lambda execution logs. A unique event ID was not available to prove a one-to-one match between the metric and log entry.
