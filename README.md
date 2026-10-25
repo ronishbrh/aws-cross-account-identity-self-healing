@@ -57,13 +57,17 @@ flowchart TD
 
 ## Validation Completed
 
-- Wazuh generated an alert from a synthetic JSON finding.
-- The SQS consumer was running and its logs showed processed `TagUser` findings.
-- Nine containment-safety unit tests passed.
-- The deployed Lambda was configured with `ALERT_MODE=audit` at the last verification.
-- EventBridge's monitoring metrics showed one invocation at `2026-10-24 14:05 UTC`, correlated with Lambda logs at `14:06:48 UTC` showing a `TagUser` event processed and successfully sent to SQS.
+- Lambda configuration in `us-east-1` reported `Active` and `LastUpdateStatus: Successful`.
+- Lambda was configured with `ALERT_MODE=audit`.
+- The EventBridge rule `identity-self-healing-iam-security-events` was enabled and its target was the expected Lambda function.
+- Both SQS queues were accessible by queue URL, and their key attributes were inspected.
+- The local SQS consumer process was running. Its log showed five `TagUser` findings logged in the inspected output.
+- The latest five records in `wazuh-logs/identity-findings.json` parsed as JSON and showed `response_mode=audit` and `action_taken=none`.
+- Wazuh custom rule `100920` generated level-10 alerts for a synthetic `WAZUH_PIPELINE_TEST` record and a `TagUser` record explicitly attributed to `synthetic-pipeline-test`.
+- Nine containment-safety unit tests passed in the previously recorded test run.
+- A Gitleaks scan using the documented temporary baseline reported no additional findings beyond that baseline.
 
-These checks validate key components, but do not prove that every event path or live containment action has been tested end to end.
+These checks validate individual components and synthetic detection behavior. They do not establish a uniquely correlated real AWS event from CloudTrail through Wazuh, or prove live containment works end to end.
 
 ## Safety
 
@@ -106,16 +110,18 @@ python -m unittest discover -s lambda -p 'test_*.py' -v
 
 ## Verification Evidence
 
-The following checks were completed during development:
+The following evidence was observed during development:
 
-- Lambda configuration reported `Active` and `LastUpdateStatus: Successful`.
-- Lambda was configured with `ALERT_MODE=audit`.
-- A synthetic `TagUser` event was invoked directly against Lambda.
-- Lambda classified the event as medium severity and reported that the finding was sent to SQS.
-- The SQS consumer wrote the finding to the Wazuh input JSON file.
-- Wazuh generated a level 10 alert under custom rule `100920` for the synthetic finding.
-- Nine containment-safety unit tests passed.
-- The repository excludes Terraform state, runtime findings, logs, and deployment ZIP archives.
+- Lambda in `us-east-1` reported `Active`, `LastUpdateStatus: Successful`, and `ALERT_MODE=audit`.
+- EventBridge was enabled and configured to target the Lambda function.
+- SQS queue URLs and queue attributes were retrieved successfully.
+- The local SQS consumer was running and its inspected log showed `TagUser` findings being logged.
+- Recent finding records parsed as JSON and retained `response_mode=audit` and `action_taken=none`.
+- Wazuh rule `100920` generated level-10 alerts for two inspected synthetic/test findings: `WAZUH_PIPELINE_TEST` and a `TagUser` record attributed to `synthetic-pipeline-test`.
+- Nine containment-safety unit tests passed in the previously recorded test run.
+- Earlier development evidence recorded a `TagUser` event classified by Lambda and reported as successfully sent to SQS. EventBridge invocation metrics and Lambda logs were correlated by time, but no unique event ID established a one-to-one match.
+
+The inspected Wazuh alerts are synthetic/test evidence, not proof of a real AWS event traversing the entire pipeline. The current CLI identity cannot call `logs:GetLogEvents`, so the latest Lambda log contents could not be independently inspected during this verification.
 
 ## Evidence Artifacts
 
@@ -129,6 +135,10 @@ These artifacts summarize observed results without including raw CloudWatch logs
 
 ## Known Limitations
 
-- Automatic EventBridge-triggered processing is supported by correlated EventBridge invocation metrics and Lambda execution logs. A unique event ID was not available to prove a one-to-one match between the metric and log entry.
+- Earlier EventBridge invocation metrics and Lambda execution logs were correlated by time, but a unique event ID was not available to prove a one-to-one match.
+- A real AWS event has not yet been reliably correlated across CloudTrail/EventBridge, Lambda, SQS, the local consumer, and Wazuh.
+- The current `terraform-lab` identity lacks `logs:GetLogEvents` for the Lambda log group, preventing independent inspection of recent Lambda log contents.
+- The AWS CLI default region is `ap-south-1`, while the Lambda, EventBridge rule, and SQS resources verified for this workflow are in `us-east-1`. Specify the intended region explicitly when running verification commands.
 - The deployed Lambda hardcodes `TEST_USER` to `self-healing-test-user`; the local source allows configuration through an environment variable. Review and reconcile this difference before any future deployment.
-- Live containment was not tested as part of the final pipeline verification. The deployed Lambda should remain in audit mode until controlled containment testing is explicitly approved.
+- The SQS consumer writes finding records and processed-message state separately. A crash between these operations may result in duplicate output.
+- Live containment has not been verified end to end. Keep the deployed Lambda in audit mode until controlled containment testing is explicitly approved.
