@@ -1,0 +1,1 @@
+{"timestamp": "2026-10-22T04:02:34.586757+00:00", "status": "detected", "event_name": "CreateAccessKey", "severity": "high", "recommended_response": "Review the new access key; verify the actor and key owner.", "actor": "synthetic-test-user", "account_id": "686511310473", "region": "us-east-1", "response_mode": "audit", "action_taken": "none", "queue_status": "sent"}

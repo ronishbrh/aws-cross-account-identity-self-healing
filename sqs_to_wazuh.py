@@ -22,24 +22,28 @@ SEVERITY_MAP = {
 }
 
 
+
 def convert_finding(finding):
     return {
         "severity": SEVERITY_MAP.get(
             str(finding.get("severity", "high")).lower(), "HIGH"
         ),
         "finding_status": finding.get("finding_status", "UNREVIEWED"),
-        "eventTime": finding.get("timestamp"),
-        "eventName": finding.get("event_name", "Unknown"),
+        "eventTime": finding.get("eventTime", finding.get("timestamp")),
+        "eventName": finding.get("eventName", finding.get("event_name", "Unknown")),
         "actor": finding.get("actor", "unknown"),
-        "sourceIP": finding.get("source_ip"),
-        "target": finding.get("target", finding.get("event_name", "Unknown")),
-        "errorCode": finding.get("errorCode"),
-        "accountId": finding.get("account_id", "unknown"),
+        "sourceIP": finding.get("sourceIP", finding.get("source_ip")),
+        "target": finding.get(
+            "target", finding.get("event_name", finding.get("eventName", "Unknown"))
+        ),
+        "errorCode": finding.get("errorCode", finding.get("error_code")),
+        "accountId": finding.get("accountId", finding.get("account_id", "unknown")),
         "region": finding.get("region", "unknown"),
         "recommended_response": finding.get("recommended_response", ""),
         "response_mode": finding.get("response_mode", "audit"),
-        "action_taken": "none",
+        "action_taken": finding.get("action_taken", "none"),
     }
+
 
 
 def load_processed_ids():

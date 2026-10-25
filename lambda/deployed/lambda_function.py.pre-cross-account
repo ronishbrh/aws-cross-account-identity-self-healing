@@ -1,0 +1,120 @@
+import json
+import os
+import logging
+import boto3
+from datetime import datetime, timezone
+
+ALERT_MODE = os.getenv("ALERT_MODE", "audit")
+QUEUE_URL = os.environ["IDENTITY_FINDINGS_QUEUE_URL"]
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+sqs = boto3.client("sqs")
+
+SEVERITY = {
+    "CreateAccessKey": "high",
+    "AttachUserPolicy": "critical",
+    "PutUserPolicy": "critical",
+    "AttachRolePolicy": "critical",
+    "CreateLoginProfile": "high",
+    "CreatePolicyVersion": "high",
+}
+
+RECOMMENDATIONS = {
+    "CreateAccessKey": "Review the new access key; verify the actor and key owner.",
+    "AttachUserPolicy": "Review the attached policy and assess excessive permissions.",
+    "PutUserPolicy": "Inspect the inline policy for unauthorized privilege escalation.",
+    "AttachRolePolicy": "Review the role policy attachment and effective permissions.",
+    "CreateLoginProfile": "Verify whether console access was intentionally created.",
+    "CreatePolicyVersion": "Review the new policy version and its default-version status.",
+}
+
+
+def lambda_handler(event, context=None):
+    """Classify monitored IAM events and publish findings to SQS."""
+
+    logger.info(json.dumps({
+        "message": "IAM event received",
+        "source": event.get("source", "direct-test"),
+        "detail_type": event.get("detail-type", "direct-test"),
+    }))
+
+    if "detail" in event:
+        if (
+            event.get("source") != "aws.iam"
+            or event.get("detail-type") != "AWS API Call via CloudTrail"
+        ):
+            return {
+                "status": "ignored",
+                "reason": "Not a supported IAM CloudTrail event",
+            }
+
+        detail = event["detail"]
+
+        if detail.get("eventSource") != "iam.amazonaws.com":
+            return {
+                "status": "ignored",
+                "reason": "Unexpected event source",
+            }
+    else:
+        # Direct-test input: the caller supplies the event detail.
+        detail = event
+
+    event_name = detail.get("eventName", "")
+
+    if event_name not in SEVERITY:
+        return {
+            "status": "ignored",
+            "reason": "Event is not in the monitored IAM event list",
+            "event_name": event_name,
+        }
+
+    identity = detail.get("userIdentity", {})
+
+    finding = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "status": "detected",
+        "event_name": event_name,
+        "severity": SEVERITY[event_name],
+        "recommended_response": RECOMMENDATIONS[event_name],
+        "actor": (
+            identity.get("userName")
+            or identity.get("arn")
+            or identity.get("principalId", "unknown")
+        ),
+        "account_id": (
+            detail.get("recipientAccountId")
+            or identity.get("accountId")
+            or event.get("account", "unknown")
+        ),
+        "region": detail.get("awsRegion", "unknown"),
+        "response_mode": ALERT_MODE,
+        "action_taken": "none",
+    }
+
+    logger.info(json.dumps({
+        "message": "IAM event classified",
+        "event_name": event_name,
+        "severity": finding["severity"],
+        "response_mode": ALERT_MODE,
+        "action_taken": "none",
+    }))
+
+    # Fail visibly if SQS delivery fails; do not silently lose findings.
+    response = sqs.send_message(
+        QueueUrl=QUEUE_URL,
+        MessageBody=json.dumps(finding),
+    )
+
+    logger.info(json.dumps({
+        "message": "Finding sent to SQS",
+        "event_name": event_name,
+        "sqs_message_id": response["MessageId"],
+    }))
+
+    return {
+        **finding,
+        "queue_status": "sent",
+        "action_taken": "none",
+    }

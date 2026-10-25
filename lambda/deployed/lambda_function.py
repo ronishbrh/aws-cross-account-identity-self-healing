@@ -217,9 +217,9 @@ def lambda_handler(event, context=None):
             or (detail.get("requestParameters") or {}).get("roleName")
             or event_name
         ),
-        "source_ip": detail.get("sourceIPAddress"),
         "response_mode": ALERT_MODE,
         "action_taken": action_taken,
+        "source_ip": detail.get("sourceIPAddress"),
     }
 
     logger.info(json.dumps({

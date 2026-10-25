@@ -1,18 +1,7 @@
-# Terraform state and local configuration
-*.tfstate
-*.tfstate.*
-.terraform/
-*.tfplan
-crash.log
-crash.*.log
-override.tf
-override.tf.json
-*_override.tf
-*_override.tf.json
-
-# Credentials and private keys
-credentials
-config
+# Credentials and secrets
+.aws/
+**/credentials
+**/config
 .env
 .env.*
 !.env.example
@@ -20,24 +9,36 @@ config
 *.key
 *.p12
 *.pfx
+secrets/
+secret/
+
+# Terraform generated/state files
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+crash.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
 
 # Python
-.venv/
-venv/
 __pycache__/
 *.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
 
-# Runtime logs and local output
+# Runtime logs and findings (may contain account IDs/IPs)
 logs/
-wazuh-logs/*.json
-wazuh-logs/*.json.*
+wazuh-logs/
 *.log
 
-# Generated deployment packages and backups
-lambda/*.zip
+# Generated deployment artifacts and local recovery copies
+*.zip
 *.bak
-*.pre-*
-
-# Local Lambda test artifacts
-lambda/lambda-test-response.json
-lambda/test-event.json
+*.backup
+*.pre-auth-fix
+*.pre-cookie

@@ -1,0 +1,14 @@
+{
+  "source": "aws.iam",
+  "detail-type": "AWS API Call via CloudTrail",
+  "detail": {
+    "eventSource": "iam.amazonaws.com",
+    "eventName": "CreateAccessKey",
+    "recipientAccountId": "686511310473",
+    "awsRegion": "us-east-1",
+    "userIdentity": {
+      "userName": "synthetic-test-user",
+      "accountId": "686511310473"
+    }
+  }
+}
